@@ -1,0 +1,6 @@
+[db]
+user = "test"
+password = "Pass_Word"
+host = "localhost"
+port = "3306"
+schema = "b3py"

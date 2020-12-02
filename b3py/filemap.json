@@ -1,0 +1,158 @@
+{
+    "rec_type": {
+        "begin": 0,
+        "end": 2,
+        "type": "string",
+        "description": ""
+    },
+    "session_date": {
+        "begin": 2,
+        "end": 10,
+        "type": "date",
+        "description": ""
+    },
+    "bdi_code": {
+        "begin": 10,
+        "end": 12,
+        "type": "string",
+        "description": ""
+    },
+    "ticker": {
+        "begin": 12,
+        "end": 24,
+        "type": "string",
+        "description": ""
+    },
+    "market_type": {
+        "begin": 24,
+        "end": 27,
+        "type": "string",
+        "description": ""
+    },
+    "short_name": {
+        "begin": 27,
+        "end": 39,
+        "type": "string",
+        "description": ""
+    },
+    "spec": {
+        "begin": 39,
+        "end": 49,
+        "type": "string",
+        "description": ""
+    },
+    "term_expiration": {
+        "begin": 49,
+        "end": 52,
+        "type": "string",
+        "description": ""
+    },
+    "currency": {
+        "begin": 52,
+        "end": 56,
+        "type": "string",
+        "description": ""
+    },
+    "open_price": {
+        "begin": 56,
+        "end": 69,
+        "type": "float",
+        "description": ""
+    },
+    "high_price": {
+        "begin": 69,
+        "end": 82,
+        "type": "float",
+        "description": ""
+    },
+    "low_price": {
+        "begin": 82,
+        "end": 95,
+        "type": "float",
+        "description": ""
+    },
+    "avg_price": {
+        "begin": 95,
+        "end": 108,
+        "type": "float",
+        "description": ""
+    },
+    "close_price": {
+        "begin": 108,
+        "end": 121,
+        "type": "float",
+        "description": ""
+    },
+    "PREOFC": {
+        "begin": 121,
+        "end": 134,
+        "type": "float",
+        "description": ""
+    },
+    "PREOFV": {
+        "begin": 134,
+        "end": 147,
+        "type": "float",
+        "description": ""
+    },
+    "deals": {
+        "begin": 147,
+        "end": 152,
+        "type": "integer",
+           "description": ""
+    },
+    "quantity": {
+        "begin": 152,
+        "end": 170,
+        "type": "integer",
+        "description": ""
+    },
+    "volume": {
+        "begin": 170,
+        "end": 188,
+        "type": "float",
+        "description": ""
+    },
+    "PREEXE": {
+        "begin": 188,
+        "end": 201,
+        "type": "float",
+        "description": ""
+    },
+    "INDOPC": {
+        "begin": 201,
+        "end": 202,
+        "type": "",
+        "description": ""
+    },
+    "DATVEN": {
+        "begin": 202,
+        "end": 210,
+        "type": "",
+        "description": ""
+    },
+    "FATCOT": {
+        "begin": 210,
+        "end": 217,
+        "type": "",
+        "description": ""
+    },
+    "PTOEXE": {
+        "begin": 217,
+        "end": 230,
+        "type": "",
+        "description": ""
+    },
+    "isin_code": {
+        "begin": 230,
+        "end": 242,
+        "type": "",
+        "description": ""
+    },
+    "DISMES": {
+        "begin": 242,
+        "end": 245,
+        "type": "",
+        "description": ""
+    }
+}
