@@ -1,5 +1,6 @@
 from .parse import get_values
 from .db import engine, History
+import sqlalchemy
 
 def read_file(filepath:str)->list:
     values = []
@@ -44,7 +45,7 @@ def lazy_read(filepath:str, step=10)->list:
             if parsed['bdi_code'] != '02':
                 continue
 
-            line_values = [
+            line_values = (
                 parsed['session_date'],
                 parsed['ticker'],
                 parsed['open_price'],
@@ -54,14 +55,27 @@ def lazy_read(filepath:str, step=10)->list:
                 parsed['volume'],
                 parsed['quantity'],
                 parsed['deals']
-            ]
+            )
             
             values.append(line_values)
-            # yield line_values
             i += 1
 
             if i == step:
                 i = 0
                 yield values
         
-        yield values
+        yield values        
+
+def insert_table(table_lines:list):
+    conn = engine.connect()
+    table = History.__table__
+    ins = table.insert(table_lines)
+    try:
+        result = conn.execute(ins)
+    except:
+        print('DB Insertion error. Check for duplicated keys')
+    else:
+        print('deu bom')
+
+
+
