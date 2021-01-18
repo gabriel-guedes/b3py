@@ -1,0 +1,30 @@
+version = 1
+disable_existing_loggers = false
+
+[formatters]
+  [formatters.brief]
+    format = "%(name)-8s - %(message)s"
+  [formatters.default]
+    format = "%(asctime)s %(levelname)-8s %(name)-15s %(message)s"
+    datefmt = "%Y-%m-%d %H:%M:%S"
+[handlers]
+  [handlers.console]
+    class = "logging.StreamHandler"
+    level = "DEBUG"
+    formatter = "brief"
+    stream = "ext://sys.stdout"
+  [handlers.file]
+  # class = "logging.handlers.RotatingFileHandler"  
+    class = "logging.FileHandler"
+    level = "DEBUG"
+    formatter = "default"
+    filename = "b3py.log"
+    # maxBytes = 1024
+    # backupCount = 3
+[loggers]
+  [loggers.root]
+    handlers = ["console"]
+  [loggers.scrape]
+    handlers = ["console", "file"]
+  [loggers.history]
+    handlers = ["console", "file"]

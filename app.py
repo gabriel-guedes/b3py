@@ -1,36 +1,16 @@
-from b3py.history import read_file, lazy_read, insert_table
-#COTAHIST_D10112020.TXT
-sample_file = './b3py/sample/COTAHIST_D10112020.TXT'
+from b3py import history
 
-# values = read_file(sample_file)
-# for i in values:
-#     print(i)
+one_day_file = 'b3py/sample/COTAHIST_D10112020.TXT'
 
-# def firstn(n):
-#     num = 0
-#     while num < n:
-#         yield num
-#         num += 1
+prices = history.lazy_read_prices(one_day_file)
 
-# sum_of_first_n = sum(firstn(6))
-# print(sum_of_first_n)
+# for lines in prices:
+#     print(type(lines))
+#     for stock in lines:
+#         print(stock)
+#         print('\n')
 
-# first_five = firstn(4)
+from b3py import config
 
-# print(next(first_five))
-# print(next(first_five))
-# print(next(first_five))
-# print(next(first_five))
-
-values = lazy_read(sample_file)
-line_count = 0
-for i in values:
-    line_count = line_count + len(i)
-    insert_table(i)
-
-
-
-# print(f'LAZY lines: {line_count}')
-
-# values = read_file(sample_file)
-# print(f'Full read lines: {len(values)}')
+logger = config.get_logger()
+logger.info('balbalba \n pulou?')

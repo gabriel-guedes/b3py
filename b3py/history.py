@@ -1,8 +1,12 @@
 from .parse import get_values
 from .db import engine, History
 import sqlalchemy
+import logging
+from .config import get_logger
 
-def read_file(filepath:str)->list:
+logger = get_logger('history',logging.DEBUG)
+
+def read_prices(filepath:str)->list:
     values = []
     with open(filepath, 'r') as rawdata:
         for line in rawdata:
@@ -30,7 +34,7 @@ def read_file(filepath:str)->list:
     
     return values
 
-def lazy_read(filepath:str, step=10)->list:
+def lazy_read_prices(filepath:str, step=100)->list:
     values = []
     i = 0
     with open(filepath, 'r') as rawdata:
@@ -66,16 +70,13 @@ def lazy_read(filepath:str, step=10)->list:
         
         yield values        
 
-def insert_table(table_lines:list):
+def insert_prices(table_lines:list):
     conn = engine.connect()
     table = History.__table__
     ins = table.insert(table_lines)
     try:
         result = conn.execute(ins)
     except:
-        print('DB Insertion error. Check for duplicated keys')
+        logger.exception('DB Insertion error from {table_lines[0]} to {table_lines[-1]}')
     else:
-        print('deu bom')
-
-
-
+        logger.info(f'{len(table_lines)} lines inserted into History table')
