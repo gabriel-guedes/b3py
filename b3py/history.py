@@ -1,6 +1,7 @@
 from .parse import get_values
 from .db import engine, History
 import sqlalchemy
+from sqlalchemy.orm import sessionmaker
 import logging
 from .config import get_logger
 
@@ -37,7 +38,7 @@ def read_prices(filepath:str)->list:
 def lazy_read_prices(filepath:str, step=100)->list:
     values = []
     i = 0
-    with open(filepath, 'r') as rawdata:
+    with open(filepath, 'r', encoding='latin-1') as rawdata:
         for line in rawdata:
             if i == 0:
                 values = []
@@ -77,6 +78,21 @@ def insert_prices(table_lines:list):
     try:
         result = conn.execute(ins)
     except:
-        logger.exception('DB Insertion error from {table_lines[0]} to {table_lines[-1]}')
+        logger.exception(f'DB Insertion error from {table_lines[0]} to {table_lines[-1]}')
     else:
-        logger.info(f'{len(table_lines)} lines inserted into History table')
+        pass
+        # logger.info(f'{len(table_lines)} lines inserted into History table')
+
+def insert_prices_orm(history_lines:list):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    insertion_list = []
+
+    for line in history_lines:
+        row = History(session_date=line[0], ticker=line[1], open_price=line[2], high_price=line[3],
+        low_price=line[4], close_price=line[5], volume=line[6], quantity=line[7], deals=line[8])
+        insertion_list.append(row)
+    
+    if insertion_list:
+        session.add_all(insertion_list)
+        session.commit()

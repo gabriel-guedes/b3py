@@ -1,30 +1,37 @@
 from .config import db_user, db_password, db_host, db_schema, db_port
-import sqlalchemy
+from sqlalchemy import Column, String, Float, Integer, BigInteger, Date, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
-engine = sqlalchemy.create_engine(f'mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:{db_port}/{db_schema}')
+engine = create_engine(f'mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:{db_port}/{db_schema}')
 
 Base = declarative_base()
 
 class History(Base):
-    __tablename__ = 'History'
+    __tablename__ = 'history'
 
-    session_date = sqlalchemy.Column(sqlalchemy.Date, primary_key=True)
-    ticker = sqlalchemy.Column(sqlalchemy.String(12), primary_key=True)
-    open_price = sqlalchemy.Column(sqlalchemy.Float)
-    high_price = sqlalchemy.Column(sqlalchemy.Float)
-    low_price = sqlalchemy.Column(sqlalchemy.Float)
-    close_price = sqlalchemy.Column(sqlalchemy.Float)
-    volume = sqlalchemy.Column(sqlalchemy.Float)
-    quantity = sqlalchemy.Column(sqlalchemy.BigInteger)
-    deals = sqlalchemy.Column(sqlalchemy.Integer)
+    session_date = Column(Date, primary_key=True)
+    ticker = Column(String(12), primary_key=True)
+    open_price = Column(Float)
+    high_price = Column(Float)
+    low_price = Column(Float)
+    close_price = Column(Float)
+    volume = Column(Float)
+    quantity = Column(BigInteger)
+    deals = Column(Integer)
 
-class Stocks(Base):
-    __tablename__ = 'Stocks'
-    ticker = sqlalchemy.Column(sqlalchemy.String(12), primary_key=True)
-    share_type = sqlalchemy.Column(sqlalchemy.String(5))
-    first_appearence = sqlalchemy.Column(sqlalchemy.Date)
-    last_appearence = sqlalchemy.Column(sqlalchemy.Date)
+    def __repr__(self):
+        return f'<History(session_date="{self.session_date}", ticker="{self.ticker}")>'
+
+
+class Stock(Base):
+    __tablename__ = 'stocks'
+    ticker = Column(String(12), primary_key=True)
+    share_type = Column(String(5))
+    first_session = Column(Date)
+    last_session = Column(Date)
+
+    def __repr__(self):
+        return f'<Stock(ticker="{self.ticker}", share_type="{self.share_type}", first_session="{self.first_session}", last_session="{self.last_session}")>'
 
 def create_tables():
     Base.metadata.bind = engine
