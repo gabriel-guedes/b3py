@@ -11,6 +11,8 @@ class History(Base):
 
     session_date = Column(Date, primary_key=True)
     ticker = Column(String(12), primary_key=True)
+    subclass = Column(String(4))
+    event = Column(String(4))
     open_price = Column(Float)
     high_price = Column(Float)
     low_price = Column(Float)
@@ -23,15 +25,15 @@ class History(Base):
         return f'<History(session_date="{self.session_date}", ticker="{self.ticker}")>'
 
 
-class Stock(Base):
-    __tablename__ = 'stocks'
-    ticker = Column(String(12), primary_key=True)
-    share_type = Column(String(5))
-    first_session = Column(Date)
-    last_session = Column(Date)
+# class Stock(Base):
+#     __tablename__ = 'stocks'
+#     ticker = Column(String(12), primary_key=True)
+#     share_type = Column(String(5))
+#     first_session = Column(Date)
+#     last_session = Column(Date)
 
-    def __repr__(self):
-        return f'<Stock(ticker="{self.ticker}", share_type="{self.share_type}", first_session="{self.first_session}", last_session="{self.last_session}")>'
+#     def __repr__(self):
+#         return f'<Stock(ticker="{self.ticker}", share_type="{self.share_type}", first_session="{self.first_session}", last_session="{self.last_session}")>'
 
 def create_tables():
     Base.metadata.bind = engine

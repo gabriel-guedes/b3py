@@ -1,0 +1,13 @@
+[history]
+# CI = Fundos de Investimentos
+# DRN = ADRs
+subclass = [
+    'CI',
+    'CPA',
+    'DIR', 'DR2', 'DR3', 'DRN',
+    'IBO', 'IBX',
+    'MIB',
+    'PRA', 'PRB', 'PRC',
+    'R11', 'R32', 'R33', 'R42',
+    'RON', 'RPN',
+]
