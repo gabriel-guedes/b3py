@@ -1,8 +1,12 @@
 from .config import db_user, db_password, db_host, db_schema, db_port
-from sqlalchemy import Column, String, Float, Integer, BigInteger, Date, create_engine
+from sqlalchemy import Column, String, Float, Integer, BigInteger, Date, Numeric, create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 engine = create_engine(f'mysql+mysqlconnector://{db_user}:{db_password}@{db_host}:{db_port}/{db_schema}')
+
+Session = sessionmaker(bind=engine)
+session = Session()
 
 Base = declarative_base()
 
@@ -13,11 +17,11 @@ class History(Base):
     ticker = Column(String(12), primary_key=True)
     subclass = Column(String(4))
     event = Column(String(4))
-    open_price = Column(Float)
-    high_price = Column(Float)
-    low_price = Column(Float)
-    close_price = Column(Float)
-    volume = Column(Float)
+    open_price = Column(Numeric(precision=10, scale=2))
+    high_price = Column(Numeric(precision=10, scale=2))
+    low_price = Column(Numeric(precision=10, scale=2))
+    close_price = Column(Numeric(precision=10, scale=2))
+    volume = Column(Numeric(precision=18, scale=2))
     quantity = Column(BigInteger)
     deals = Column(Integer)
 
@@ -25,17 +29,25 @@ class History(Base):
         return f'<History(session_date="{self.session_date}", ticker="{self.ticker}")>'
 
 
-# class Stock(Base):
-#     __tablename__ = 'stocks'
-#     ticker = Column(String(12), primary_key=True)
-#     share_type = Column(String(5))
-#     first_session = Column(Date)
-#     last_session = Column(Date)
+class Dividends(Base):
+    __tablename__ = 'dividends'
 
-#     def __repr__(self):
-#         return f'<Stock(ticker="{self.ticker}", share_type="{self.share_type}", first_session="{self.first_session}", last_session="{self.last_session}")>'
+    ticker = Column(String(12), primary_key=True)
+    data_com = Column(Date, primary_key=True)
+    amount = Column(Numeric(precision=10, scale=2))
+
+    def __repr__(self):
+        return f'<Dividends(ticker="{self.ticker}", data_com="{self.data_com}", amount="{self.amount}")>'
 
 def create_tables():
+    """Drop and then create all declared tables
+    
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """        
     Base.metadata.bind = engine
     Base.metadata.drop_all()
     Base.metadata.create_all()

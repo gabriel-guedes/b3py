@@ -67,43 +67,43 @@ description = ""
 [open_price]
 begin = 56
 end = 69
-type = "float"
+type = "decimal"
 description = ""
 
 [high_price]
 begin = 69
 end = 82
-type = "float"
+type = "decimal"
 description = ""
 
 [low_price]
 begin = 82
 end = 95
-type = "float"
+type = "decimal"
 description = ""
 
 [avg_price]
 begin = 95
 end = 108
-type = "float"
+type = "decimal"
 description = ""
 
 [close_price]
 begin = 108
 end = 121
-type = "float"
+type = "decimal"
 description = ""
 
 [PREOFC]
 begin = 121
 end = 134
-type = "float"
+type = "decimal"
 description = ""
 
 [PREOFV]
 begin = 134
 end = 147
-type = "float"
+type = "decimal"
 description = ""
 
 [deals]
@@ -121,13 +121,13 @@ description = ""
 [volume]
 begin = 170
 end = 188
-type = "float"
+type = "decimal"
 description = ""
 
 [PREEXE]
 begin = 188
 end = 201
-type = "float"
+type = "decimal"
 description = ""
 
 [INDOPC]

@@ -8,131 +8,98 @@ from .config import get_logger
 
 logger = get_logger('scrape',logging.DEBUG)
 
-logger.info('Testing logger')
-
 def get_url_content(ticker: str):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'}
     url = f'https://www.meusdividendos.com/empresa/{ticker}'
     r = requests.get(url, headers=headers)
     if r.status_code != 200:
         logger.debug(f'SCRAPE Error - Status: {r.status_code} for {url}')
-
     soup = BeautifulSoup(r.content, 'lxml')
     return(soup)
 
-def meusdiv_ultimos(ticker):
+def get_table_specs(section: str):
+    """Returns css-selector, row lenght and field positions for tables to be scraped
+    Prameters
+    ---------
+    section : {'ult', 'hist', 'boni'}
+        Area where tabular data will be scraped
+    
+    Returns
+    -------
+    css-selector: str
+
+    """    
+    if section == 'ult':
+        css_selector = '#dividendos > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(1)'
+        row_length = 6
+        cells_position = [0, 1, 3, 5]
+    
+    elif section == 'hist':
+        css_selector = '.table-bordered > tbody:nth-child(1)'
+        row_length = 7
+        cells_position = [0, 1, 3, 5]        
+        
+    elif section == 'boni':
+        css_selector = 'div.row:nth-child(3) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(1)'
+        row_length = 5
+        cells_position = [0, 1, 3, 4]
+
+    return css_selector, row_length, cells_position
+
+def build_output_row(content, positions):
+        
+        acao = content[positions[0]]
+        tipo = content[positions[1]]
+        data_com = datetime.strptime(content[positions[2]][:15], f'%a %b %d %Y')
+        fator = content[positions[3]]
+
+        return [data_com, acao, tipo, fator]
+
+
+def scrape_adjustments(ticker: str, section: str):
+    """Scrape www.meusdividendos.com/empresa/{ticker} data from sections:
+    'ULTIMOS PROVENTOS', 'HISTORICO DE PROVENTOS' and 'BONIFICACAO, DESDOBRAMENTO AGRUPAMENTO'
+    Prameters
+    ---------
+    ticker : str
+        Ticker without subclass prefix (i.e. for 'PETR4' use 'PETR')
+    
+    section : {'ult', 'hist', 'boni'}
+        Area where tabular data will be scraped
+    
+    Returns
+    -------
+    pd.Dataframe
+        Pandas Dataframe with columns: ticker, type, data_com, amount or factor
     """
-    Scrape www.meusdividendos.com/empresa/{ticker}
-    Get data from ULTIMOS PROVENTOS table
-    """
+
+    if not section in {'ult', 'hist', 'boni'}:
+        raise ValueError(f'Section must be "ult", "hist", "boni"')
 
     soup = get_url_content(ticker)
-
-    ult_css_selector = '#dividendos > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(1)'
-    ultimos = soup.select(ult_css_selector)
-    if not ultimos:
-        logger.info(f'No dividends found for ticker:{ticker.upper()}')
-        return pd.DataFrame()
-        # raise ValueError(f'No dividends found on {url}')
+    css_selector, row_length, cells_position = get_table_specs(section)
     
-    for ult_table in ultimos:
-        ult_data = ult_table.find_all('td')
+    tbody = soup.select(css_selector)
+    if len(tbody) != 1:
+        logger.debug(f'{ticker} - No data found or page structure has changed')
+        return
     
-    cells = [i.text.strip() for i in ult_data]
-    ultimos_list = []
-    i = 0
-    while i < len(cells):
-        acao = cells[i]
-        provento = cells[i+1]
-        data_com = datetime.strptime(cells[i+3][:15], f'%a %b %d %Y')
-        valor = cells[i+5]
-
-        ultimos_list.append([data_com, ticker.upper(), acao, provento, valor])
-
-        i += 6
-
-    df = pd.DataFrame(ultimos_list)
-    if df.size:
-        df.set_index(0, inplace=True)
+    td = tbody[0].find_all('td')
     
-    return(df)
-
-def meusdiv_historico(ticker):
-    """
-    Scrape www.meusdividendos.com/empresa/{ticker}
-    Get data from HISTORICO DE PROVENTOS table
-    """
-    soup = get_url_content(ticker)
-    hist_css_selector = '.table-bordered > tbody:nth-child(1)'
-
-    historico = soup.select(hist_css_selector)
-    if not historico:
-        logger.debug(f'No dividends found for {ticker}')
-        return pd.DataFrame()
+    content = [i.text.strip() for i in td]
     
-    for hist_table in historico:
-        hist_data = hist_table.find_all('td')
+    rows_start_positions = [i for i in range(0, len(content), row_length)]
+
+    output_list = []
     
-    cells = [i.text.strip() for i in hist_data]
-    hist_list = []
-    i = 0
-    while i < len(cells):
-        acao = cells[i]
-        provento = cells[i+1]
-        data_com = datetime.strptime(cells[i+3][:15], f'%a %b %d %Y')
-        valor = cells[i+5]
+    for start_position in rows_start_positions:
+        row_content = content[start_position:start_position+row_length]
+        output_row = build_output_row(row_content, cells_position)
+        output_list.append(output_row)
 
-        hist_list.append([data_com, ticker.upper(), acao, provento, valor])
-
-        i += 7
-
-    df = pd.DataFrame(hist_list)
+    df = pd.DataFrame(output_list)
     if df.size > 0:
         df.set_index(0, inplace=True)
-    
-    return(df)
 
-def meusdiv_bonificacao(ticker):
-    """
-    Scrape www.meusdividendos.com/empresa/{ticker}
-    Get data from BONIFICACAO, DESDOBRAMENTO E GRUPAMENTO table
-    """
-
-    logger.debug('Trying to scrape bonif')
-
-    soup = get_url_content(ticker)
-    css_selector = 'div.row:nth-child(3) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > table:nth-child(1) > tbody:nth-child(1)'
-
-    table_body = soup.select(css_selector)
-    if not table_body:
-        logger.debug(f'No bonificacao/split/agrupamento found for {ticker}')
-        return pd.DataFrame()
-    
-    for rows in table_body:
-        boni_data = rows.find_all('td')
-    
-    cells = [i.text.strip() for i in boni_data]
-    boni_list = []
-    i = 0
-    while i < len(cells):
-        acao = cells[i]
-        tipo = cells[i+1]
-        data_com = datetime.strptime(cells[i+3][:15], f'%a %b %d %Y')
-        fator = cells[i+4].replace(' para ', ':')
-
-        boni_list.append([data_com, acao, tipo, fator])
-
-        i += 5
-
-    df = pd.DataFrame(boni_list)
-    if df.size > 0:
-        df.set_index(0, inplace=True)
     
     return(df)    
-
-if __name__ == '__main__':
-    # input_ticker = 'gluglu'
-    # print(meusdiv_ultimos(input_ticker))
-    # print(meusdiv_historico(input_ticker))
-    # print(meusdiv_bonificacao(input_ticker))
-    pass

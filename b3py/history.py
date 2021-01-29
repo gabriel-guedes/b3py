@@ -1,6 +1,4 @@
-from .db import engine, History
-import sqlalchemy
-from sqlalchemy.orm import sessionmaker
+from .db import session, History
 import toml
 import logging
 from typing import TextIO
@@ -8,28 +6,79 @@ from .config import get_logger
 
 logger = get_logger('history',logging.DEBUG)
 
-Session = sessionmaker(bind=engine)
-session = Session()
-
 with open('./b3py/filemap.toml', 'r') as fp:
     filemap = toml.load(fp)
 
+def format_data(value, data_type):
+    """Format value according to its data type
+    decimals will always be divided by 100 to match 2 decimal places
+    
+    Parameters
+    ----------
+    value : str
+        String containing values from raw data file
+    data_type : str
+        String containing the type of data (i.e. integer, string, float)
+
+    Returns
+    -------
+        Data typed according to data_type parameter
+    """    
+    
+    if data_type == 'decimal' and value:
+        formatted_value = int(value)/100
+    elif data_type == 'integer' and value:
+        formatted_value = int(value)
+    else:
+        formatted_value = value
+    
+    return formatted_value
+
 def parse_data(raw: str)->dict:
+    """Parse raw data file line using positions mapped in filemap.toml
+    
+    Parameters
+    ----------
+    raw : str
+        Line read from raw data file
+
+    Returns
+    -------
+    dict
+        Dictionary with key/values corresponding to historical data (i.e. session date, ticker, ohlc prices, etc) 
+    """        
+
     values = {}
     for key in filemap:
         begin = filemap[key]['begin']
         end = filemap[key]['end']
-        value = raw[begin:end].replace('*', '').strip()
-        if filemap[key]['type'] == 'float' and value:
-            value = float(value)
-        elif filemap[key]['type'] == 'integer' and value:
-            value = int(value)
+        data_type = filemap[key]['type']
+
+        value = raw[begin:end].strip()
         
-        values.update({key: value})
+        formatted_value = format_data(value, data_type)
+        
+        values.update({key: formatted_value})
     
     return values
 
-def lazy_read_rawdata(fp: TextIO, step=100)->list:
+def lazy_process_rawdata(fp: TextIO, step=1000)->list:
+    """Generator function that reads/parses n-lines of raw data file
+    
+    
+    Parameters
+    ----------
+    fp : TextIO
+        File pointer
+    
+    step : int (default 100)
+        Number of lines yielded
+
+    Yields
+    -------
+    list
+        List of tuples containing history data fields
+    """        
     values = []
     i = 0
 
@@ -69,22 +118,40 @@ def lazy_read_rawdata(fp: TextIO, step=100)->list:
     
     yield values
 
-def insert_history_orm(history_lines:list):
-    # Session = sessionmaker(bind=engine)
-    # session = Session()
-    insertion_list = []
-
-    for line in history_lines:
-        row = History(session_date=line[0], ticker=line[1], subclass=line[2], event=line[3], open_price=line[4], high_price=line[5],
-        low_price=line[6], close_price=line[7], volume=line[8], quantity=line[9], deals=line[10])
-        insertion_list.append(row)
+def build_history_obj(parsed_data:tuple):
+    """Build History object from parsed data
     
-    if insertion_list:
-        session.bulk_save_objects(insertion_list)
-        session.commit()
+    Parameters
+    ----------
+    parsed_data : tuple
+        Tuple containing History attributes
 
-def load_history_file(filepath: str, step=100):
-    logger.info(f'Processing {filepath}...')
+    Returns
+    -------
+    History
+        History object
+    """
+    
+    return History(
+        session_date=parsed_data[0], 
+        ticker=parsed_data[1], 
+        subclass=parsed_data[2], 
+        event=parsed_data[3], 
+        open_price=parsed_data[4], 
+        high_price=parsed_data[5],
+        low_price=parsed_data[6], 
+        close_price=parsed_data[7], 
+        volume=parsed_data[8], 
+        quantity=parsed_data[9], 
+        deals=parsed_data[10]
+    )
+
+def load_history(filepath: str, step=1000):
+    logger.info(f'NEW VERSION - Processing {filepath}...')
     with open(filepath, 'r', encoding='latin_1') as fp:
-        for lines in lazy_read_rawdata(fp):
-            insert_history_orm(lines)
+        for data in lazy_process_rawdata(fp, step=step):
+            history_objects = [build_history_obj(n) for n in data]
+            session.bulk_save_objects(history_objects)
+            session.commit()
+
+    logger.info(f'Done')
